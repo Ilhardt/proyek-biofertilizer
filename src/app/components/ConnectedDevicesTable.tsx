@@ -1,8 +1,19 @@
-'use client'; 
+'use client';
 
 import React from 'react';
 import { FaChartLine, FaCog, FaTrash } from 'react-icons/fa';
 
+/**
+ * @file ConnectedDevicesTable.tsx
+ * @description Komponen ini nampilin tabel daftar perangkat IoT yang terkoneksi.
+ * Isinya ada Device ID, Lokasi, Tipe Perangkat, Status (Online, Offline, Calibration Needed),
+ * dan Kapan Terakhir Aktif. Ada juga tombol aksi buat tiap baris (View Analytics, Edit, Delete)
+ * dan tombol Filter/Sort di header tabel. Penting dicatat, data perangkat yang ditampilin
+ * (`devicesToDisplay`) masih kosong, dan semua fungsi interaksi (filter, sort, aksi per baris,
+ * navigasi halaman) itu masih dummy, cuma buat ngetes tampilan UI aja, belum ada logika
+ * backend atau fungsionalitas aslinya.
+ * @example <ConnectedDevicesTable />
+ */
 export interface Device {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [x: string]: any;
@@ -19,13 +30,19 @@ interface ConnectedDevicesTableProps {
 }
 
 const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
-    const devicesToDisplay: Device[] = []; 
+    // Ini array kosong alias dummy buat nampilin data perangkat.
+    // Nanti kalo udah ada data beneran dari API, ini bisa diisi.
+    const devicesToDisplay: Device[] = [];
 
+    // Ini fungsi dummy buat nanggepin semua aksi klik di tabel (filter, sort, aksi baris, pagination).
+    // Cuma nge-log di konsol sama munculin alert pop-up, nggak ada aksi beneran.
     const handleDummyClick = (action: string, id?: string) => {
         console.log(`Dummy: ${action} action triggered for ${id || 'table'}`);
         alert(`Dummy: ${action} action for ${id || 'table'} executed!`);
     };
 
+    // Fungsi buat ngasih class CSS (warna background dan teks) berdasarkan status perangkat.
+    // Biar tampilan statusnya beda-beda.
     const getStatusClasses = (status: Device['status']) => {
         switch (status) {
             case 'Online':
@@ -44,18 +61,20 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-700">Connected IoT Devices</h2>
                 <div className="flex space-x-2">
+                    {/* Tombol filter dummy */}
                     <button
                         className="flex items-center px-3 py-1 bg-gray-100 rounded-md text-gray-700 hover:bg-gray-200 cursor-pointer"
-                        onClick={() => handleDummyClick('Filter')} 
+                        onClick={() => handleDummyClick('Filter')}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-1.447.894L8 14.07V11.414L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
                         </svg>
                         Filter
                     </button>
+                    {/* Tombol sort dummy */}
                     <button
                         className="flex items-center px-3 py-1 bg-gray-100 rounded-md text-gray-700 hover:bg-gray-200 cursor-pointer"
-                        onClick={() => handleDummyClick('Sort')} 
+                        onClick={() => handleDummyClick('Sort')}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
@@ -90,6 +109,7 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
+                        {/* Ini pengecekan, kalo devicesToDisplay ada isinya (walaupun dummy), baru di-map */}
                         {devicesToDisplay.length > 0 ? (
                             devicesToDisplay.map((device) => (
                                 <tr key={device.id}>
@@ -103,6 +123,7 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                                         {device.deviceType}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
+                                        {/* Statusnya dikasih warna beda-beda pakai fungsi getStatusClasses */}
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClasses(device.status)}`}>
                                             {device.status}
                                         </span>
@@ -112,18 +133,21 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex space-x-2">
+                                            {/* Tombol View Analytics dummy */}
                                             <button
                                                 className="text-blue-600 hover:text-blue-900"
                                                 onClick={() => handleDummyClick('View Analytics', device.id)}
                                             >
                                                 <FaChartLine className="h-5 w-5" />
                                             </button>
+                                            {/* Tombol Edit Device dummy */}
                                             <button
                                                 className="text-gray-600 hover:text-indigo-900"
                                                 onClick={() => handleDummyClick('Edit Device', device.id)}
                                             >
                                                 <FaCog className="h-5 w-5" />
                                             </button>
+                                            {/* Tombol Delete Device dummy */}
                                             <button
                                                 className="text-red-600 hover:text-red-900"
                                                 onClick={() => handleDummyClick('Delete Device', device.id)}
@@ -135,9 +159,10 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                                 </tr>
                             ))
                         ) : (
+                            // Kalo devicesToDisplay kosong, munculin pesan ini
                             <tr>
                                 <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                                    No devices found.
+                                    No devices found. 
                                 </td>
                             </tr>
                         )}
@@ -145,6 +170,7 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                 </table>
             </div>
 
+            {/* Bagian pagination dummy */}
             <nav
                 className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
                 aria-label="Pagination"
@@ -152,17 +178,19 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                 <div className="hidden sm:block">
                     <p className="text-sm text-gray-700">
                         Showing <span className="font-medium">0</span> to <span className="font-medium">0</span> of{' '}
-                        <span className="font-medium">0</span> results
+                        <span className="font-medium">0</span> results {/* Ini juga masih dummy angkanya */}
                     </p>
                 </div>
                 <div className="flex-1 flex justify-between sm:justify-end">
+                    {/* Tombol previous page dummy (disabled) */}
                     <button
                         onClick={() => handleDummyClick('Previous Page')}
-                        disabled={true} 
+                        disabled={true}
                         className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                         Previous
                     </button>
+                    {/* Tombol next page dummy (disabled) */}
                     <button
                         onClick={() => handleDummyClick('Next Page')}
                         disabled={true}

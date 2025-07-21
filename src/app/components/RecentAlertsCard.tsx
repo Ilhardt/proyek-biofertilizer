@@ -3,11 +3,22 @@ import React from 'react';
 import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaExclamationCircle } from 'react-icons/fa'; 
 import { Alert } from '../hooks/useDashboardData';
 
+/**
+ * @file RecentAlertsCard.tsx
+ * @description Komponen ini nampilin daftar notifikasi atau *alert* yang baru-baru ini muncul.
+ * Setiap *alert* punya tipe (Critical, Warning, Info) yang bakal nentuin ikon dan warna latar
+ * belakangnya, biar gampang bedain mana yang penting banget. Selain itu, ada juga informasi
+ * judul *alert*, pesan lengkap, dan kapan *alert* itu terjadi (`timestamp`) yang di-format
+ * jadi "sekian jam/hari yang lalu". Kalo lagi *loading* atau nggak ada *alert*, ada pesan
+ * khusus yang muncul.
+ * @example <RecentAlertsCard alerts={latestAlerts} isLoading={isAlertsLoading} />
+ */
 interface RecentAlertsCardProps {
     alerts: Alert[] | null;
     isLoading?: boolean;
 }
 
+// Fungsi helper buat format waktu jadi "X jam/hari yang lalu"
 const formatTimeAgo = (timestamp: string): string => {
     const now = new Date();
     const alertTime = new Date(timestamp);
@@ -26,6 +37,7 @@ const formatTimeAgo = (timestamp: string): string => {
 };
 
 const RecentAlertsCard: React.FC<RecentAlertsCardProps> = ({ alerts, isLoading }) => {
+    // Fungsi ini nentuin ikon dan kelas warna background berdasarkan tipe alert
     const getAlertStyle = (type: string) => {
         switch (type) {
             case 'Critical':
@@ -45,7 +57,7 @@ const RecentAlertsCard: React.FC<RecentAlertsCardProps> = ({ alerts, isLoading }
                 };
             default:
                 return {
-                    icon: null,
+                    icon: null, // Kalo tipe nggak dikenali, nggak ada ikon
                     bgColorClass: 'bg-gray-50'
                 };
         }
@@ -55,8 +67,10 @@ const RecentAlertsCard: React.FC<RecentAlertsCardProps> = ({ alerts, isLoading }
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold text-gray-700 mb-4">Recent Alerts</h2>
             {isLoading ? (
+                // Tampilan saat data sedang dimuat
                 <div className="text-gray-500 text-center py-8">Loading alerts...</div>
             ) : (alerts && alerts.length > 0) ? (
+                // Tampilan saat ada data alerts
                 <ul className="space-y-4">
                     {alerts.map((alert) => {
                         const { icon, bgColorClass } = getAlertStyle(alert.type);
@@ -75,6 +89,7 @@ const RecentAlertsCard: React.FC<RecentAlertsCardProps> = ({ alerts, isLoading }
                     })}
                 </ul>
             ) : (
+                // Tampilan saat tidak ada data alerts
                 <div className="text-gray-500 text-center py-8">No recent alerts.</div>
             )}
         </div>

@@ -1,6 +1,18 @@
 // src/hooks/useDashboardData.ts
 import { useState, useEffect, useCallback } from 'react';
 
+/**
+ * @file useDashboardData.ts
+ * @description Hook ini bertanggung jawab untuk mengambil dan mengelola data yang dibutuhkan
+ * untuk dashboard utama. Ini mencakup data metrik sensor (kelembaban tanah, pH, suhu, kelembaban),
+ * status perangkat, peringatan terbaru, dan gambaran umum proyek. Hook ini juga menangani
+ * status loading data dan menyediakan placeholder data jika fetching gagal.
+ * Saat ini, fetching data masih disimulasikan (kode fetching data nyata masih dikomentari),
+ * namun strukturnya sudah disiapkan untuk integrasi backend.
+ * @example const { soilMoisture, isLoading } = useDashboardData();
+ */
+
+// Interface untuk data perangkat yang ditampilkan di dashboard
 export interface DashboardDevice {
     id: string;
     name: string;
@@ -9,6 +21,7 @@ export interface DashboardDevice {
     value?: number;
 }
 
+// Interface untuk data peringatan (alerts)
 export interface Alert {
     id: string;
     type: 'Critical' | 'Warning' | 'Info';
@@ -17,6 +30,7 @@ export interface Alert {
     timestamp: string;
 }
 
+// Interface untuk data gambaran umum proyek
 export interface ProjectData {
     imageSrc: string;
     title: string;
@@ -25,6 +39,7 @@ export interface ProjectData {
     sensorParameters: string[];
 }
 
+// Interface untuk data metrik sensor (misal: kelembaban, pH)
 export interface MetricData {
     title: string;
     value: number | null;
@@ -37,44 +52,52 @@ export interface MetricData {
     optimalRangeMin: number;
     optimalRangeMax: number;
     optimalRangeColor: string;
-    needleRotationDegree: number | null;
-    fillPercentage: number | null;
+    needleRotationDegree: number | null; // Untuk visualisasi jarum gauge
+    fillPercentage: number | null; // Untuk visualisasi fill gauge
 }
 
 // --- FUNGSI HELPER (dipindahkan dari page.tsx) ---
+// Fungsi buat ngitung rotasi jarum untuk gauge, biar pas sama nilainya
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getNeedleRotation = (value: number, min: number, max: number): number => {
-    const clampedValue = Math.max(min, Math.min(max, value));
-    const normalizedValue = (clampedValue - min) / (max - min);
-    return normalizedValue * 180;
+    const clampedValue = Math.max(min, Math.min(max, value)); // Pastiin nilai ada di antara min dan max
+    const normalizedValue = (clampedValue - min) / (max - min); // Normalisasi nilai jadi 0-1
+    return normalizedValue * 180; // Kalikan 180 karena gauge biasanya 180 derajat
 };
 
+// Fungsi buat ngitung persentase fill untuk gauge (misal: bar atau lingkaran)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getFillPercentage = (value: number, min: number, max: number): number => {
-    const clampedValue = Math.max(min, Math.min(max, value));
-    const normalizedValue = (clampedValue - min) / (max - min);
-    return normalizedValue * 100;
+    const clampedValue = Math.max(min, Math.min(max, value)); // Pastiin nilai ada di antara min dan max
+    const normalizedValue = (clampedValue - min) / (max - min); // Normalisasi nilai jadi 0-1
+    return normalizedValue * 100; // Ubah jadi persentase
 };
 
+// Custom Hook useDashboardData
 export const useDashboardData = () => {
+    // State buat nyimpen data masing-masing metrik
     const [soilMoisture, setSoilMoisture] = useState<MetricData | null>(null);
     const [soilPh, setSoilPh] = useState<MetricData | null>(null);
     const [temperature, setTemperature] = useState<MetricData | null>(null);
     const [humidity, setHumidity] = useState<MetricData | null>(null);
 
-
-    const [devicesStatus, setDevicesStatus] = useState<DashboardDevice[]>([]); 
-    const [recentAlerts, setRecentAlerts] = useState<Alert[]>([]); 
+    // State buat nyimpen status perangkat dan peringatan terbaru
+    const [devicesStatus, setDevicesStatus] = useState<DashboardDevice[]>([]);
+    const [recentAlerts, setRecentAlerts] = useState<Alert[]>([]);
+    // State buat nyimpen data overview proyek
     const [projectOverview, setProjectOverview] = useState<ProjectData | null>(null);
 
+    // State buat nampilin status loading
     const [isLoading, setIsLoading] = useState(true);
 
+    // Fungsi utama buat ngambil data, dibungkus pake useCallback biar efisien
     const fetchData = useCallback(async () => {
-        setIsLoading(true); 
+        setIsLoading(true); // Set loading jadi true pas mulai fetch
         try {
-
+            // Simulasi delay fetching data dari backend (dikomentari)
             // await new Promise(resolve => setTimeout(resolve, 2000));
 
+            // Data dummy dari backend (dikomentari)
             // const backendMoisture = 72.5;
             // const backendPh = 6.8;
             // const backendTemperature = 27.1;
@@ -112,6 +135,7 @@ export const useDashboardData = () => {
             //     ],
             // };
 
+            // // Set state metrik dengan data dummy dan perhitungan gauge
             // const moistureMin = 0; const moistureMax = 100;
             // setSoilMoisture({
             //     title: "Soil Moisture",
@@ -154,22 +178,25 @@ export const useDashboardData = () => {
 
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error);
+            // Kalau ada error, set semua data jadi null/kosong
             setSoilMoisture(null);
             setSoilPh(null);
             setTemperature(null);
             setHumidity(null);
-            setDevicesStatus([]); 
-            setRecentAlerts([]); 
+            setDevicesStatus([]);
+            setRecentAlerts([]);
             setProjectOverview(null);
         } finally {
-            setIsLoading(false); 
+            setIsLoading(false); // Selesai loading, baik sukses atau gagal
         }
-    }, []);
+    }, []); // Dependencies kosong, artinya fetchData cuma dibuat sekali saat komponen mount
 
+    // useEffect buat ngejalanin fetchData pas komponen pertama kali di-render
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, [fetchData]); // Dependencies: fetchData, biar effect jalan lagi kalo fetchData berubah (walaupun useCallback udah mencegah ini)
 
+    // Return semua data dan status loading
     return {
         soilMoisture, soilPh, temperature, humidity,
         devicesStatus, recentAlerts, projectOverview,

@@ -2,18 +2,34 @@
 
 import React from 'react';
 
+/**
+ * @file AlertsHeader.tsx
+ * @description Ini tuh komponen buat bagian atas halaman "System Alerts" kita.
+ * Isinya ada judul gede "System Alerts" sama sepasang kontrol di kanan:
+ * dropdown buat milih tingkat keparahan (Severity) dan tombol "Filter".
+ * Meskipun ada kontrolnya, fungsi buat ganti pilihan di dropdown (`handleSeverityChangeDummy`)
+ * dan klik tombol filter (`handleFilterClickDummy`) itu masih dummy banget ya,
+ * cuma buat nampilin log di konsol atau alert pop-up, jadi belum nge-filter data beneran.
+ * Komponen ini nggak butuh props apa-apa, mandiri aja.
+ * @example <AlertsHeader />
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface AlertsHeaderProps {
 }
 
 const AlertsHeader: React.FC<AlertsHeaderProps> = () => {
 
+    // Nilai ini cuma buat nampilin default di dropdown, belum dinamis dari state.
     const selectedOptions = 'All Severity';
 
+    // Ini fungsi palsu buat nanggepin perubahan di dropdown severity.
+    // Cuma nge-log ke konsol, belum ada efek lain.
     const handleSeverityChangeDummy = (e: React.ChangeEvent<HTMLSelectElement>) => {
         console.log('Dummy: Severity change detected:', e.target.value);
     };
 
+    // Ini juga fungsi palsu buat tombol filter.
+    // Bakal muncul alert kecil sama nge-log di konsol, tapi nggak beneran nge-filter apa-apa.
     const handleFilterClickDummy = () => {
         console.log('Dummy: Filter button clicked.');
         alert('Dummy: Filter button was clicked (no actual filtering).');

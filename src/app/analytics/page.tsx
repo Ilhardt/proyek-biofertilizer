@@ -1,7 +1,7 @@
 'use client';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import React, { useState } from 'react'; 
+import React, { useState } from 'react';
 import Image from 'next/image';
 import AnalysisCard from './../components/AnalysisCard';
 import SensorDataCorrelationCard from './../components/SensorDataCorrelationCard';
@@ -9,23 +9,34 @@ import FieldHealthStatusCard from './../components/FieldHealthStatusCard';
 import KeyInsightCard from '../components/KeyInsightCard';
 import AnalyticsHeader from './../components/AnalyticsHeader'; 
 
+/**
+ * @file analytics/page.tsx
+ * @description Halaman Data Analytics ini berfungsi sebagai dashboard komprehensif
+ * yang menampilkan berbagai metrik dan wawasan penting terkait data sensor.
+ * Layoutnya terbagi menjadi beberapa bagian: header, kartu-kartu analisis individual
+ * untuk metrik seperti kelembaban tanah, pH, dan kadar nitrogen (yang saat ini
+ * menggunakan placeholder gambar), grafik korelasi data sensor, status kesehatan lahan,
+ * dan bagian khusus untuk menampilkan wawasan kunci dari analisis data.
+ * @example <DataAnalyticsPage />
+ */
 export default function DataAnalyticsPage() {
 
     return (
         <div className="flex-1 p-8 bg-gray-50 min-h-screen overflow-y-auto">
 
-            <AnalyticsHeader
-            />
+            {/* Header halaman Analytics */}
+            <AnalyticsHeader />
 
-            {/* Bagian Kartu Data Analisis */}
+            {/* Bagian Kartu Data Analisis - Menampilkan ringkasan metrik penting */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {/* Kartu Analisis untuk Kelembaban Tanah */}
                 <AnalysisCard
                     title="Soil Moisture"
                     averageValue="Avg: 65%"
                 >
-                    {/* Placeholder for Soil Moisture Chart */}
+                    {/* Placeholder untuk grafik Kelembaban Tanah, menggunakan gambar statis */}
                     <div className="relative w-full h-full border">
-                        <div className="absolute inset-x-0  h-4/4 bg-blue-200/50 flex items-center justify-center text-blue-800 text-xs">
+                        <div className="absolute inset-x-0 h-4/4 bg-blue-200/50 flex items-center justify-center text-blue-800 text-xs">
                             <Image
                                 src="/images/soil-moisture-bg.jpg"
                                 alt="Soil Moisture Background"
@@ -37,11 +48,12 @@ export default function DataAnalyticsPage() {
                     </div>
                 </AnalysisCard>
 
+                {/* Kartu Analisis untuk pH Tanah */}
                 <AnalysisCard
                     title="Soil pH"
                     averageValue="Avg: 6.5"
                 >
-                    {/* Placeholder for Soil pH Chart */}
+                    {/* Placeholder untuk grafik pH Tanah, menggunakan gambar statis */}
                     <div className="relative w-full h-full">
                         <div className="absolute inset-x-0 bottom-0 h-4/4 bg-green-200/50 flex items-center justify-center text-green-800 text-xs">
                             <Image
@@ -55,11 +67,12 @@ export default function DataAnalyticsPage() {
                     </div>
                 </AnalysisCard>
 
+                {/* Kartu Analisis untuk Kadar Nitrogen */}
                 <AnalysisCard
                     title="Nitrogen Levels"
                     averageValue="Avg: 24ppm"
                 >
-                    {/* Placeholder for Nitrogen Levels Chart */}
+                    {/* Placeholder untuk grafik Kadar Nitrogen, menggunakan gambar statis */}
                     <div className="relative w-full h-full">
                         <div className="absolute inset-x-0 bottom-0 h-4/4 bg-yellow-200/50 flex items-center justify-center text-yellow-800 text-xs">
                             <Image
@@ -73,11 +86,12 @@ export default function DataAnalyticsPage() {
                     </div>
                 </AnalysisCard>
 
+                {/* Kartu Analisis untuk Prediksi Hasil Panen */}
                 <AnalysisCard
                     title="Yield Prediction"
                     predictionChange="+12%"
                 >
-                    {/* Placeholder for Yield Prediction Chart/Table */}
+                    {/* Placeholder untuk grafik/tabel Prediksi Hasil Panen, menggunakan gambar statis */}
                     <div className="relative w-full h-full">
                         <div className="absolute inset-x-0 bottom-0 h-4/4 bg-red-200/50 flex items-center justify-center text-red-800 text-xs p-4 overflow-auto">
                             <Image
@@ -92,14 +106,17 @@ export default function DataAnalyticsPage() {
                 </AnalysisCard>
             </div>
 
+            {/* Bagian untuk Korelasi Data Sensor dan Status Kesehatan Lahan */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <SensorDataCorrelationCard />
                 <FieldHealthStatusCard />
             </div>
 
+            {/* Bagian untuk Key Insights */}
             <div className="bg-white rounded-lg shadow-md p-6 gap-4">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Key Insights</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Kartu Key Insight pertama dengan ikon dan placeholder teks */}
                     <KeyInsightCard
                         icon={
                             <svg className="w-8 h-8 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -109,6 +126,7 @@ export default function DataAnalyticsPage() {
                         title=""
                         description=""
                     />
+                    {/* Kartu Key Insight kedua dengan ikon dan placeholder teks */}
                     <KeyInsightCard
                         icon={
                             <svg className="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -118,6 +136,7 @@ export default function DataAnalyticsPage() {
                         title=""
                         description=""
                     />
+                    {/* Kartu Key Insight ketiga dengan ikon dan placeholder teks */}
                     <KeyInsightCard
                         icon={
                             <svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 20 20">

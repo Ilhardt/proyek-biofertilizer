@@ -4,6 +4,15 @@
 
 import React from 'react';
 
+/**
+ * @file TempHumidityTrendsCard.tsx
+ * @description Komponen ini itu kartu yang didesain buat nampilin tren data suhu dan kelembaban.
+ * Kayak komponen tren data lainnya, dia punya dua mode: kalo lagi *loading* (`isLoading` true),
+ * bakal munculin pesan "Loading Temperature & Humidity Graph...", dan kalo udah selesai *loading*,
+ * dia bakal nampilin gambar *placeholder* grafik. Ini masih kerangka ya, jadi belum ada
+ * integrasi grafik dinamis yang beneran nampilin data suhu dan kelembaban dari props `data`.
+ * @example <TempHumidityTrendsCard data={[{ time: '10:00', temperature: 25, humidity: 60 }]} isLoading={false} />
+ */
 // Anda bisa mendefinisikan tipe data untuk chart di sini atau di file types global jika ada
 interface TempHumidityDataPoint {
     time: string; // atau Date
@@ -12,7 +21,7 @@ interface TempHumidityDataPoint {
 }
 
 interface TempHumidityTrendsCardProps {
-    data?: TempHumidityDataPoint[]; // Data untuk grafik
+    data?: TempHumidityDataPoint[]; // Data untuk grafik (saat ini belum digunakan secara visual)
     isLoading: boolean;
 }
 
@@ -21,16 +30,15 @@ const TempHumidityTrendsCard: React.FC<TempHumidityTrendsCardProps> = ({ data, i
     return (
         <div className="bg-white p-4 rounded-lg shadow-md h-80 flex items-center justify-center">
             {isLoading ? (
+                // Tampilan saat data sedang dimuat
                 <div className="text-gray-500 animate-pulse">
                     Loading Temperature & Humidity Graph...
                 </div>
             ) : (
+                // Tampilan setelah loading, menampilkan gambar placeholder grafik
                 <div className="w-full h-full flex items-center justify-center text-gray-500">
                     {/* Placeholder for the actual Temperature & Humidity Chart */}
-                    {/* Di sini Anda akan mengintegrasikan komponen grafik seperti Recharts, Chart.js, dll. */}
-                    {/* Contoh: <LineChart width={500} height={300} data={data}>...</LineChart> */}
                     <img src="/_next/static/media/image_00bdd7.png" alt="Temperature & Humidity Graph" className="max-w-full max-h-full object-contain" />
-                    {/* Atau hanya teks placeholder jika Anda belum memiliki implementasi grafik */}
                     {/* Temperature & Humidity Graph (Placeholder) */}
                 </div>
             )}

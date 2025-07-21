@@ -2,18 +2,32 @@
 
 import React from 'react';
 
+/**
+ * @file AnalyticsHeader.tsx
+ * @description Komponen ini itu bagian *header* buat halaman analitik data kita, judulnya "Biofertilizer Data Analysis".
+ * Di sebelah kanan, ada dropdown buat milih rentang waktu (kayak "Last 7 days") dan tombol "Export".
+ * Fungsi-fungsi buat dropdown (`handleTimeRangeChangeDummy`) dan tombol export (`handleExportClickDummy`)
+ * itu masih *dummy* ya, cuma buat *console log* atau *alert* pop-up doang. Jadi, ini bener-bener cuma komponen tampilan
+ * yang belum ada logika pengambilan data atau export beneran. Dia nggak perlu props apa-apa alias *standalone*.
+ * @example <AnalyticsHeader />
+ */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface AnalyticsHeaderProps {
 }
 
 const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = () => {
 
+    // Ini cuma variabel buat nampilin default pilihan di dropdown, belum nyambung ke state yang dinamis.
     const selectedTimeRange = 'Last 7 days';
 
+    // Ini fungsi dummy buat nanggepin perubahan pilihan di dropdown rentang waktu.
+    // Cuma nge-log ke konsol, nggak ngapa-ngapain data.
     const handleTimeRangeChangeDummy = (e: React.ChangeEvent<HTMLSelectElement>) => {
         console.log('Dummy: Time range change detected:', e.target.value);
     };
 
+    // Fungsi dummy buat tombol export.
+    // Bakal munculin alert pop-up kecil dan nge-log di konsol, tapi nggak ada proses export file.
     const handleExportClickDummy = () => {
         console.log('Dummy: Export button clicked.');
         alert('Dummy: Export button was clicked (no actual export).');
@@ -26,8 +40,8 @@ const AnalyticsHeader: React.FC<AnalyticsHeaderProps> = () => {
                 <div className="relative">
                     <select
                         className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-blue-500 cursor-pointer"
-                        value={selectedTimeRange} 
-                        onChange={handleTimeRangeChangeDummy} 
+                        value={selectedTimeRange}
+                        onChange={handleTimeRangeChangeDummy}
                     >
                         <option>Last 24 hours</option>
                         <option>Last 7 days</option>
