@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
  * karena ini cuma frontend dummy. Begitu tombol "Login" diklik, langsung
  * nge-redirect ke halaman dashboard.
  */
-
 export default function LoginPage() {
   // Panggil hook useRouter dari Next.js buat pindah halaman.
   const router = useRouter();
