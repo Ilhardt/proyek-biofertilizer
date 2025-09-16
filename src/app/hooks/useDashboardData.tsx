@@ -1,5 +1,4 @@
-// src/hooks/useDashboardData.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, ReactNode } from "react";
 
 /**
  * @file useDashboardData.ts
@@ -9,197 +8,279 @@ import { useState, useEffect, useCallback } from 'react';
  * status loading data dan menyediakan placeholder data jika fetching gagal.
  * Saat ini, fetching data masih disimulasikan (kode fetching data nyata masih dikomentari),
  * namun strukturnya sudah disiapkan untuk integrasi backend.
- * @example const { soilMoisture, isLoading } = useDashboardData();
+ * @example const { plantData, isLoading } = useDashboardData();
  */
 
-// Interface untuk data perangkat yang ditampilkan di dashboard
-export interface DashboardDevice {
-    id: string;
-    name: string;
-    status: 'Online' | 'Offline' | 'Warning';
-    description?: string;
-    value?: number;
+// Interface untuk data tanaman yang akan ditampilkan di tabel
+export interface PlantData {
+  id: string;
+  temperature: number;
+  humidity: number;
+  soilMoisture: number;
+  soilPH: number;
+  status: "Kering" | "Basah";
+  lastActive: string;
+}
+
+// Interface untuk data perangkat yang ditampilkan di DeviceStatusCard
+export interface DeviceData {
+  id: string;
+  name: string;
+  status: "Online" | "Offline";
 }
 
 // Interface untuk data peringatan (alerts)
 export interface Alert {
-    id: string;
-    type: 'Critical' | 'Warning' | 'Info';
-    heading: string;
-    message: string;
-    timestamp: string;
-}
-
-// Interface untuk data gambaran umum proyek
-export interface ProjectData {
-    imageSrc: string;
-    title: string;
-    description: string;
-    researchObjectives: string[];
-    sensorParameters: string[];
+  id: string;
+  type: "Critical" | "Warning" | "Info";
+  heading: string;
+  message: string;
+  timestamp: string;
 }
 
 // Interface untuk data metrik sensor (misal: kelembaban, pH)
 export interface MetricData {
-    title: string;
-    value: number | null;
-    min: number;
-    max: number;
-    unit: string;
-    range: string;
-    indicatorColorClass: string;
-    iconType: 'moisture' | 'ph' | 'temperature' | 'humidity' | 'generic';
-    optimalRangeMin: number;
-    optimalRangeMax: number;
-    optimalRangeColor: string;
-    needleRotationDegree: number | null; // Untuk visualisasi jarum gauge
-    fillPercentage: number | null; // Untuk visualisasi fill gauge
+  title: string;
+  value: number | null;
+  min: number;
+  max: number;
+  unit: string;
+  range: string;
+  indicatorColorClass: string;
+  iconType: "moisture" | "ph" | "temperature" | "humidity" | "generic";
+  optimalRangeMin: number;
+  optimalRangeMax: number;
+  optimalRangeColor: string;
+  needleRotationDegree: number | null; // Untuk visualisasi jarum gauge
+  fillPercentage: number | null; // Untuk visualisasi fill gauge
 }
 
 // --- FUNGSI HELPER (dipindahkan dari page.tsx) ---
 // Fungsi buat ngitung rotasi jarum untuk gauge, biar pas sama nilainya
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getNeedleRotation = (value: number, min: number, max: number): number => {
-    const clampedValue = Math.max(min, Math.min(max, value)); // Pastiin nilai ada di antara min dan max
-    const normalizedValue = (clampedValue - min) / (max - min); // Normalisasi nilai jadi 0-1
-    return normalizedValue * 180; // Kalikan 180 karena gauge biasanya 180 derajat
+  const clampedValue = Math.max(min, Math.min(max, value));
+  const normalizedValue = (clampedValue - min) / (max - min);
+  return normalizedValue * 180;
 };
 
 // Fungsi buat ngitung persentase fill untuk gauge (misal: bar atau lingkaran)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getFillPercentage = (value: number, min: number, max: number): number => {
-    const clampedValue = Math.max(min, Math.min(max, value)); // Pastiin nilai ada di antara min dan max
-    const normalizedValue = (clampedValue - min) / (max - min); // Normalisasi nilai jadi 0-1
-    return normalizedValue * 100; // Ubah jadi persentase
+  const clampedValue = Math.max(min, Math.min(max, value));
+  const normalizedValue = (clampedValue - min) / (max - min);
+  return normalizedValue * 100;
 };
 
 // Custom Hook useDashboardData
 export const useDashboardData = () => {
-    // State buat nyimpen data masing-masing metrik
-    const [soilMoisture, setSoilMoisture] = useState<MetricData | null>(null);
-    const [soilPh, setSoilPh] = useState<MetricData | null>(null);
-    const [temperature, setTemperature] = useState<MetricData | null>(null);
-    const [humidity, setHumidity] = useState<MetricData | null>(null);
+  const [soilMoisture, setSoilMoisture] = useState<MetricData | null>(null);
+  const [soilPh, setSoilPh] = useState<MetricData | null>(null);
+  const [temperature, setTemperature] = useState<MetricData | null>(null);
+  const [humidity, setHumidity] = useState<MetricData | null>(null);
 
-    // State buat nyimpen status perangkat dan peringatan terbaru
-    const [devicesStatus, setDevicesStatus] = useState<DashboardDevice[]>([]);
-    const [recentAlerts, setRecentAlerts] = useState<Alert[]>([]);
-    // State buat nyimpen data overview proyek
-    const [projectOverview, setProjectOverview] = useState<ProjectData | null>(null);
+  // State untuk data tanaman (pengganti devicesStatus)
+  const [plantData, setPlantData] = useState<PlantData[]>([]);
+  const [deviceStatus, setDeviceStatus] = useState<DeviceData[]>([]);
+  const [recentAlerts, setRecentAlerts] = useState<Alert[]>([]);
 
-    // State buat nampilin status loading
-    const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-    // Fungsi utama buat ngambil data, dibungkus pake useCallback biar efisien
-    const fetchData = useCallback(async () => {
-        setIsLoading(true); // Set loading jadi true pas mulai fetch
-        try {
-            // Simulasi delay fetching data dari backend (dikomentari)
-            // await new Promise(resolve => setTimeout(resolve, 2000));
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-            // Data dummy dari backend (dikomentari)
-            // const backendMoisture = 72.5;
-            // const backendPh = 6.8;
-            // const backendTemperature = 27.1;
-            // const backendHumidity = 78;
+      const backendMoisture = 72.5;
+      const backendPh = 6.8;
+      const backendTemperature = 27.1;
+      const backendHumidity = 78;
 
-            // const backendDevicesStatus: DashboardDevice[] = [
-            //     { id: 'dev1', name: 'Sensor Node 1', status: 'Online', description: 'Active • Field A', value: 66.6 },
-            //     { id: 'dev2', name: 'Sensor Node 2', status: 'Online', description: 'Active • Field B' },
-            //     { id: 'dev3', name: 'Gateway Device', status: 'Online', description: 'Central Hub' },
-            //     { id: 'dev4', name: 'Pump Controller', status: 'Offline', description: 'Zone 3' },
-            //     { id: 'dev5', name: 'Actuator Unit', status: 'Warning', description: 'Calibration Needed' },
-            // ];
+      const backendPlantData: PlantData[] = [
+        {
+          id: "tanaman1",
+          temperature: 28,
+          humidity: 75,
+          soilMoisture: 30,
+          soilPH: 6.5,
+          status: "Kering",
+          lastActive: "2023-10-27",
+        },
+        {
+          id: "tanaman2",
+          temperature: 25,
+          humidity: 80,
+          soilMoisture: 70,
+          soilPH: 7.0,
+          status: "Basah",
+          lastActive: "2023-10-27",
+        },
+        {
+          id: "tanaman3",
+          temperature: 26,
+          humidity: 78,
+          soilMoisture: 45,
+          soilPH: 6.8,
+          status: "Basah",
+          lastActive: "2023-10-26",
+        },
+        {
+          id: "tanaman4",
+          temperature: 30,
+          humidity: 60,
+          soilMoisture: 20,
+          soilPH: 6.2,
+          status: "Kering",
+          lastActive: "2023-10-25",
+        },
+      ];
 
-            // const backendRecentAlerts: Alert[] = [
-            //     { id: 'alt1', type: 'Warning', message: 'Field A moisture below threshold - 55%', heading: 'Low Soil Moisture Alert', timestamp: '2025-07-19 14:30' },
-            //     { id: 'alt2', type: 'Info', message: 'Firmware v2.1.4 successfully installed', heading: 'System Update Completed', timestamp: '2025-07-18 10:00' },
-            //     { id: 'alt3', type: 'Critical', message: 'Field B temperature reached 34°C', heading: 'High Temperature Warning', timestamp: '2025-07-16 08:00' },
-            // ];
+      // Data dummy baru untuk DeviceStatusCard
+      const backendDevicesStatus: DeviceData[] = [
+        { id: "d1", name: "Device 1", status: "Online" },
+        { id: "d2", name: "Device 2", status: "Online" },
+        { id: "d3", name: "Device 3", status: "Offline" },
+      ];
 
-            // const backendProjectOverview: ProjectData = {
-            //     imageSrc: 'https://images.unsplash.com/photo-1542435503-956c469947f6?fit=crop&w=800&q=80',
-            //     title: 'Smart Farming IoT Project',
-            //     description: 'This project aims to optimize biofertilizer application and crop health using real-time IoT sensor data. It monitors soil moisture, pH, temperature, and humidity to provide actionable insights for farmers.',
-            //     researchObjectives: [
-            //         'Optimize biofertilizer dosage based on soil data.',
-            //         'Monitor environmental conditions for ideal plant growth.',
-            //         'Predict potential issues with early warning alerts.',
-            //         'Improve crop yield and reduce resource waste.'
-            //     ],
-            //     sensorParameters: [
-            //         'Soil Moisture: 0-100%',
-            //         'Soil pH: 0-14',
-            //         'Temperature: 0-50°C',
-            //         'Humidity: 0-100%'
-            //     ],
-            // };
+      const backendAlerts: Alert[] = [
+        {
+          id: "alt1",
+          type: "Warning",
+          message: "Kelembaban tanah di area tanaman 1 terlalu rendah - 30%",
+          heading: "Peringatan Tanah Kering",
+          timestamp: "2025-07-19 14:30",
+        },
+        {
+          id: "alt2",
+          type: "Info",
+          message: "Kondisi lingkungan ideal untuk pertumbuhan tanaman",
+          heading: "Kondisi Optimal",
+          timestamp: "2025-07-18 10:00",
+        },
+        {
+          id: "alt3",
+          type: "Critical",
+          message: "Suhu di area tanaman 4 mencapai 30°C",
+          heading: "Suhu Tinggi Terdeteksi",
+          timestamp: "2025-07-16 08:00",
+        },
+      ];
 
-            // // Set state metrik dengan data dummy dan perhitungan gauge
-            // const moistureMin = 0; const moistureMax = 100;
-            // setSoilMoisture({
-            //     title: "Soil Moisture",
-            //     value: backendMoisture, min: moistureMin, max: moistureMax, unit: "%", range: "Optimal range: 60-75%",
-            //     indicatorColorClass: "blue-500", iconType: "moisture", optimalRangeMin: 60, optimalRangeMax: 75, optimalRangeColor: "gray-400",
-            //     needleRotationDegree: getNeedleRotation(backendMoisture, moistureMin, moistureMax),
-            //     fillPercentage: getFillPercentage(backendMoisture, moistureMin, moistureMax),
-            // });
+      const moistureMin = 0;
+      const moistureMax = 100;
+      setSoilMoisture({
+        title: "Soil Moisture",
+        value: backendMoisture,
+        min: moistureMin,
+        max: moistureMax,
+        unit: "%",
+        range: "Optimal range: 60-75%",
+        indicatorColorClass: "blue-500",
+        iconType: "moisture",
+        optimalRangeMin: 60,
+        optimalRangeMax: 75,
+        optimalRangeColor: "gray-400",
+        needleRotationDegree: getNeedleRotation(
+          backendMoisture,
+          moistureMin,
+          moistureMax
+        ),
+        fillPercentage: getFillPercentage(
+          backendMoisture,
+          moistureMin,
+          moistureMax
+        ),
+      });
 
-            // const phMin = 0; const phMax = 14;
-            // setSoilPh({
-            //     title: "Soil pH",
-            //     value: backendPh, min: phMin, max: phMax, unit: "", range: "Neutral range: 6.0-7.5",
-            //     indicatorColorClass: "green-500", iconType: "ph", optimalRangeMin: getFillPercentage(6.0, phMin, phMax), optimalRangeMax: getFillPercentage(7.5, phMin, phMax), optimalRangeColor: "green-400",
-            //     needleRotationDegree: getNeedleRotation(backendPh, phMin, phMax),
-            //     fillPercentage: getFillPercentage(backendPh, phMin, phMax),
-            // });
+      const phMin = 0;
+      const phMax = 14;
+      setSoilPh({
+        title: "Soil pH",
+        value: backendPh,
+        min: phMin,
+        max: phMax,
+        unit: "",
+        range: "Neutral range: 6.0-7.5",
+        indicatorColorClass: "green-500",
+        iconType: "ph",
+        optimalRangeMin: getFillPercentage(6.0, phMin, phMax),
+        optimalRangeMax: getFillPercentage(7.5, phMin, phMax),
+        optimalRangeColor: "green-400",
+        needleRotationDegree: getNeedleRotation(backendPh, phMin, phMax),
+        fillPercentage: getFillPercentage(backendPh, phMin, phMax),
+      });
 
-            // const tempMin = 0; const tempMax = 50;
-            // setTemperature({
-            //     title: "Temperature",
-            //     value: backendTemperature, min: tempMin, max: tempMax, unit: "°C", range: "Optimal: 24-30 °C",
-            //     indicatorColorClass: "orange-500", iconType: "temperature", optimalRangeMin: getFillPercentage(24, tempMin, tempMax), optimalRangeMax: getFillPercentage(30, tempMin, tempMax), optimalRangeColor: "gray-400",
-            //     needleRotationDegree: getNeedleRotation(backendTemperature, tempMin, tempMax),
-            //     fillPercentage: getFillPercentage(backendTemperature, tempMin, tempMax),
-            // });
+      const tempMin = 0;
+      const tempMax = 50;
+      setTemperature({
+        title: "Temperature",
+        value: backendTemperature,
+        min: tempMin,
+        max: tempMax,
+        unit: "°C",
+        range: "Optimal: 24-30 °C",
+        indicatorColorClass: "orange-500",
+        iconType: "temperature",
+        optimalRangeMin: getFillPercentage(24, tempMin, tempMax),
+        optimalRangeMax: getFillPercentage(30, tempMin, tempMax),
+        optimalRangeColor: "gray-400",
+        needleRotationDegree: getNeedleRotation(
+          backendTemperature,
+          tempMin,
+          tempMax
+        ),
+        fillPercentage: getFillPercentage(backendTemperature, tempMin, tempMax),
+      });
 
-            // const humMin = 0; const humMax = 100;
-            // setHumidity({
-            //     title: "Humidity",
-            //     value: backendHumidity, min: humMin, max: humMax, unit: "%", range: "Optimal: 65-85%",
-            //     indicatorColorClass: "indigo-500", iconType: "humidity", optimalRangeMin: 65, optimalRangeMax: 85, optimalRangeColor: "gray-400",
-            //     needleRotationDegree: getNeedleRotation(backendHumidity, humMin, humMax),
-            //     fillPercentage: getFillPercentage(backendHumidity, humMin, humMax),
-            // });
+      const humMin = 0;
+      const humMax = 100;
+      setHumidity({
+        title: "Humidity",
+        value: backendHumidity,
+        min: humMin,
+        max: humMax,
+        unit: "%",
+        range: "Optimal: 65-85%",
+        indicatorColorClass: "indigo-500",
+        iconType: "humidity",
+        optimalRangeMin: 65,
+        optimalRangeMax: 85,
+        optimalRangeColor: "gray-400",
+        needleRotationDegree: getNeedleRotation(
+          backendHumidity,
+          humMin,
+          humMax
+        ),
+        fillPercentage: getFillPercentage(backendHumidity, humMin, humMax),
+      });
 
-            // setDevicesStatus(backendDevicesStatus);
-            // setRecentAlerts(backendRecentAlerts);
-            // setProjectOverview(backendProjectOverview);
+      setPlantData(backendPlantData);
+      setDeviceStatus(backendDevicesStatus);
+      setRecentAlerts(backendAlerts);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+      setSoilMoisture(null);
+      setSoilPh(null);
+      setTemperature(null);
+      setHumidity(null);
+      setPlantData([]);
+      setDeviceStatus([]);
+      setRecentAlerts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-        } catch (error) {
-            console.error("Failed to fetch dashboard data:", error);
-            // Kalau ada error, set semua data jadi null/kosong
-            setSoilMoisture(null);
-            setSoilPh(null);
-            setTemperature(null);
-            setHumidity(null);
-            setDevicesStatus([]);
-            setRecentAlerts([]);
-            setProjectOverview(null);
-        } finally {
-            setIsLoading(false); // Selesai loading, baik sukses atau gagal
-        }
-    }, []); // Dependencies kosong, artinya fetchData cuma dibuat sekali saat komponen mount
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-    // useEffect buat ngejalanin fetchData pas komponen pertama kali di-render
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]); // Dependencies: fetchData, biar effect jalan lagi kalo fetchData berubah (walaupun useCallback udah mencegah ini)
-
-    // Return semua data dan status loading
-    return {
-        soilMoisture, soilPh, temperature, humidity,
-        devicesStatus, recentAlerts, projectOverview,
-        isLoading
-    };
+  return {
+    soilMoisture,
+    soilPh,
+    temperature,
+    humidity,
+    plantData,
+    deviceStatus,
+    recentAlerts,
+    isLoading,
+  };
 };

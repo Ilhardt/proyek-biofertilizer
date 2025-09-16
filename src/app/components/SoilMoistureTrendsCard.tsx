@@ -14,29 +14,31 @@ import React from 'react';
  * @example <SoilMoistureTrendsCard data={[{ time: '10:00', value: 50 }]} isLoading={false} />
  */
 interface SoilMoistureDataPoint {
-    time: string; 
+    time: string;
     value: number;
 }
 
 interface SoilMoistureTrendsCardProps {
-    data?: SoilMoistureDataPoint[]; // Data kelembaban tanah (saat ini belum digunakan secara visual)
+    data?: SoilMoistureDataPoint[];
     isLoading: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SoilMoistureTrendsCard: React.FC<SoilMoistureTrendsCardProps> = ({ data, isLoading }) => {
     return (
-        <div className="bg-white p-4 rounded-lg shadow-md h-80 flex items-center justify-center">
+        <div className="bg-white p-4 rounded-lg shadow-md flex items-center justify-center">
             {isLoading ? (
-                // Tampilan saat data sedang dimuat
                 <div className="text-gray-500 animate-pulse">
                     Loading Soil Moisture Trends...
                 </div>
             ) : (
-                // Tampilan setelah loading, menampilkan gambar placeholder grafik
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    {/* Gambar placeholder untuk grafik tren kelembaban tanah */}
-                    <img src="/_next/static/media/image_00bdd7.png" alt="Soil Moisture Trends Graph" className="max-w-full max-h-full object-contain" />
+                <div className="flex flex-col items-center justify-center text-gray-400 w-full h-full">
+                    {/* Mengatur gambar untuk mengisi seluruh kontainer */}
+                    <img
+                        src="https://i.imgur.com/6LFhAW0.png" // Mengganti URL gambar untuk placeholder yang lebih baik
+                        alt="Soil Moisture Trends Graph"
+                        className="w-250 h-150 object-contain"
+                    />
                 </div>
             )}
         </div>

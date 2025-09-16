@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaChartLine, FaCog, FaTrash } from 'react-icons/fa';
-import { Device } from './ConnectedDevicesTable';
+// Perbaikan: Ganti impor Device dengan PlantData
+import { PlantData } from './../hooks/useDashboardData';
 
 /**
  * @file DeviceTableRow.tsx
@@ -12,8 +13,10 @@ import { Device } from './ConnectedDevicesTable';
  * @example <DeviceTableRow device={myDevice} getStatusClasses={myStatusFunc} onViewAnalytics={handleView} onEditDevice={handleEdit} onDeleteDevice={handleDelete} />
  */
 interface DeviceTableRowProps {
-    device: Device;
-    getStatusClasses: (status: Device['status']) => string;
+    // Perbaikan: Ganti tipe device menjadi PlantData
+    device: PlantData;
+    // Perbaikan: Sesuaikan tipe status agar sesuai dengan PlantData
+    getStatusClasses: (status: PlantData['status']) => string;
     onViewAnalytics: (deviceId: string) => void;
     onEditDevice: (deviceId: string) => void;
     onDeleteDevice: (deviceId: string) => void;
@@ -31,10 +34,10 @@ const DeviceTableRow: React.FC<DeviceTableRowProps> = ({
         <tr key={device.id}>
             {/* Kolom Device ID */}
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{device.id}</td>
-            {/* Kolom Lokasi */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{device.location}</td>
-            {/* Kolom Tipe Perangkat */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{device.deviceType}</td>
+            {/* Perbaikan: Ganti kolom lokasi dengan temperature */}
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{device.temperature}°C</td>
+            {/* Perbaikan: Ganti kolom deviceType dengan soilMoisture */}
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{device.soilMoisture}%</td>
             {/* Kolom Status dengan badge berwarna sesuai statusnya */}
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClasses(device.status)}`}>

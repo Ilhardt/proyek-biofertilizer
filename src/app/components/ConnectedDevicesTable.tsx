@@ -3,65 +3,39 @@
 import React from 'react';
 import { FaChartLine, FaCog, FaTrash } from 'react-icons/fa';
 
-/**
- * @file ConnectedDevicesTable.tsx
- * @description Komponen ini nampilin tabel daftar perangkat IoT yang terkoneksi.
- * Isinya ada Device ID, Lokasi, Tipe Perangkat, Status (Online, Offline, Calibration Needed),
- * dan Kapan Terakhir Aktif. Ada juga tombol aksi buat tiap baris (View Analytics, Edit, Delete)
- * dan tombol Filter/Sort di header tabel. Penting dicatat, data perangkat yang ditampilin
- * (`devicesToDisplay`) masih kosong, dan semua fungsi interaksi (filter, sort, aksi per baris,
- * navigasi halaman) itu masih dummy, cuma buat ngetes tampilan UI aja, belum ada logika
- * backend atau fungsionalitas aslinya.
- * @example <ConnectedDevicesTable />
- */
-export interface Device {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any;
-    id: string;
-    location: string;
-    deviceType?: string;
-    status: 'Online' | 'Offline' | 'Calibration Needed';
-    lastActive: string;
+// Hapus import DashboardDevice dari hooks/useDashboardData
+// Gantilah dengan PlantData yang baru
+import { PlantData } from './../hooks/useDashboardData';
+
+export interface PlantDataTableProps {
+    data: PlantData[];
+    isLoading: boolean;
 }
 
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface ConnectedDevicesTableProps {
-}
-
-const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
-    // Ini array kosong alias dummy buat nampilin data perangkat.
-    // Nanti kalo udah ada data beneran dari API, ini bisa diisi.
-    const devicesToDisplay: Device[] = [];
-
-    // Ini fungsi dummy buat nanggepin semua aksi klik di tabel (filter, sort, aksi baris, pagination).
-    // Cuma nge-log di konsol sama munculin alert pop-up, nggak ada aksi beneran.
+const PlantDataTable: React.FC<PlantDataTableProps> = ({ data, isLoading }) => {
     const handleDummyClick = (action: string, id?: string) => {
         console.log(`Dummy: ${action} action triggered for ${id || 'table'}`);
         alert(`Dummy: ${action} action for ${id || 'table'} executed!`);
     };
 
-    // Fungsi buat ngasih class CSS (warna background dan teks) berdasarkan status perangkat.
-    // Biar tampilan statusnya beda-beda.
-    const getStatusClasses = (status: Device['status']) => {
-        switch (status) {
-            case 'Online':
-                return 'bg-green-100 text-green-800';
-            case 'Offline':
-                return 'bg-red-100 text-red-800';
-            case 'Calibration Needed':
-                return 'bg-yellow-100 text-yellow-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
+    const getMoistureStatusClasses = (status: 'Kering' | 'Basah') => {
+        return status === 'Kering' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
     };
+
+    if (isLoading) {
+        return (
+            <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-center h-48">
+                <p className="text-gray-500 animate-pulse">Loading plant data...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-700">Connected IoT Devices</h2>
+                <h2 className="text-xl font-semibold text-gray-700">Data Tanaman</h2>
                 <div className="flex space-x-2">
-                    {/* Tombol filter dummy */}
+                    {/* Tombol dummy */}
                     <button
                         className="flex items-center px-3 py-1 bg-gray-100 rounded-md text-gray-700 hover:bg-gray-200 cursor-pointer"
                         onClick={() => handleDummyClick('Filter')}
@@ -71,7 +45,6 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                         </svg>
                         Filter
                     </button>
-                    {/* Tombol sort dummy */}
                     <button
                         className="flex items-center px-3 py-1 bg-gray-100 rounded-md text-gray-700 hover:bg-gray-200 cursor-pointer"
                         onClick={() => handleDummyClick('Sort')}
@@ -89,19 +62,25 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                     <thead className="bg-gray-50">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Device ID
+                                No
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Location
+                                Suhu
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Device Type
+                                Kelembaban Udara
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Kelembaban Tanah
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                pH Tanah
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Last Active
+                                Last Active (Date)
                             </th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
@@ -109,48 +88,49 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {/* Ini pengecekan, kalo devicesToDisplay ada isinya (walaupun dummy), baru di-map */}
-                        {devicesToDisplay.length > 0 ? (
-                            devicesToDisplay.map((device) => (
-                                <tr key={device.id}>
+                        {data.length > 0 ? (
+                            data.map((plantData, index) => (
+                                <tr key={plantData.id}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {device.id}
+                                        {index + 1}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {device.location}
+                                        {plantData.temperature}°C
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {device.deviceType}
+                                        {plantData.humidity}%
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {plantData.soilMoisture}%
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {plantData.soilPH}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        {/* Statusnya dikasih warna beda-beda pakai fungsi getStatusClasses */}
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClasses(device.status)}`}>
-                                            {device.status}
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getMoistureStatusClasses(plantData.status)}`}>
+                                            {plantData.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {device.lastActive}
+                                        {plantData.lastActive}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                         <div className="flex space-x-2">
-                                            {/* Tombol View Analytics dummy */}
                                             <button
                                                 className="text-blue-600 hover:text-blue-900"
-                                                onClick={() => handleDummyClick('View Analytics', device.id)}
+                                                onClick={() => handleDummyClick('View Analytics', plantData.id)}
                                             >
                                                 <FaChartLine className="h-5 w-5" />
                                             </button>
-                                            {/* Tombol Edit Device dummy */}
                                             <button
                                                 className="text-gray-600 hover:text-indigo-900"
-                                                onClick={() => handleDummyClick('Edit Device', device.id)}
+                                                onClick={() => handleDummyClick('Edit Data', plantData.id)}
                                             >
                                                 <FaCog className="h-5 w-5" />
                                             </button>
-                                            {/* Tombol Delete Device dummy */}
                                             <button
                                                 className="text-red-600 hover:text-red-900"
-                                                onClick={() => handleDummyClick('Delete Device', device.id)}
+                                                onClick={() => handleDummyClick('Delete Data', plantData.id)}
                                             >
                                                 <FaTrash className="h-5 w-5" />
                                             </button>
@@ -159,10 +139,9 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                                 </tr>
                             ))
                         ) : (
-                            // Kalo devicesToDisplay kosong, munculin pesan ini
                             <tr>
-                                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                                    No devices found. 
+                                <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                                    No plant data found.
                                 </td>
                             </tr>
                         )}
@@ -170,19 +149,16 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                 </table>
             </div>
 
-            {/* Bagian pagination dummy */}
             <nav
                 className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
                 aria-label="Pagination"
             >
                 <div className="hidden sm:block">
                     <p className="text-sm text-gray-700">
-                        Showing <span className="font-medium">0</span> to <span className="font-medium">0</span> of{' '}
-                        <span className="font-medium">0</span> results {/* Ini juga masih dummy angkanya */}
+                        Showing <span className="font-medium">{data.length}</span> results
                     </p>
                 </div>
                 <div className="flex-1 flex justify-between sm:justify-end">
-                    {/* Tombol previous page dummy (disabled) */}
                     <button
                         onClick={() => handleDummyClick('Previous Page')}
                         disabled={true}
@@ -190,7 +166,6 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
                     >
                         Previous
                     </button>
-                    {/* Tombol next page dummy (disabled) */}
                     <button
                         onClick={() => handleDummyClick('Next Page')}
                         disabled={true}
@@ -204,4 +179,4 @@ const ConnectedDevicesTable: React.FC<ConnectedDevicesTableProps> = () => {
     );
 };
 
-export default ConnectedDevicesTable;
+export default PlantDataTable;
