@@ -1,28 +1,45 @@
 "use client";
 
 import AlertCard from "./../components/AlertCard";
-import AlertsHeader from "./../components/AlertsHeader"; // Import komponen header
+import AlertsHeader from "./../components/AlertsHeader";
+import { useDashboardData } from "../hooks/useDashboardData";
 
-/**
- * @file alerts/page.tsx
- * @description Halaman ini menampilkan daftar peringatan (alerts) kepada pengguna.
- * Komponen ini berfungsi sebagai wadah utama untuk menampilkan header peringatan (`AlertsHeader`)
- * dan beberapa kartu peringatan (`AlertCard`) yang disusun dalam tata letak vertikal.
- * @example <AlertsPage />
- */
 const AlertsPage: React.FC = () => {
+    const { recentAlerts, isLoading } = useDashboardData();
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 p-8 bg-gray-50 min-h-screen flex items-center justify-center">
+                <p className="text-gray-500 text-xl animate-pulse">Memuat peringatan...</p>
+            </div>
+        );
+    }
+
+    if (!recentAlerts || recentAlerts.length === 0) {
+        return (
+            <div className="flex-1 p-8 bg-gray-50 min-h-screen">
+                <AlertsHeader />
+                <div className="text-center text-gray-500 py-10">
+                    Tidak ada peringatan terbaru saat ini.
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 p-8 bg-gray-50 min-h-screen overflow-y-auto">
-            {/* Menampilkan komponen header untuk halaman Alerts */}
             <AlertsHeader />
-
-            {/* Wadah untuk menampung daftar AlertCard, dengan jarak antar kartu */}
             <div className="space-y-6">
-                {/* Contoh AlertCard. Saat ini menggunakan instance AlertCard statis sebagai placeholder. */}
-                <AlertCard />
-                <AlertCard />
-                <AlertCard />
+                {recentAlerts.map((alert) => (
+                    <AlertCard
+                        key={alert.id}
+                        type={alert.type}
+                        heading={alert.heading} // Ganti 'title' menjadi 'heading'
+                        message={alert.message}
+                        timestamp={alert.timestamp}
+                        deviceId={alert.deviceId || "N/A"} // Tambahkan properti deviceId
+                    />
+                ))}
             </div>
         </div>
     );

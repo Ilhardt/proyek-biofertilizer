@@ -5,10 +5,11 @@ import MetricCard from "./../components/MetricCard";
 import DeviceStatusCard from "./../components/DeviceStatusCard";
 import RecentAlertsCard from "./../components/RecentAlertsCard";
 import { useDashboardData, MetricData } from "./../hooks/useDashboardData";
-import SoilMoistureTrendsCard from "./../components/SoilMoistureTrendsCard";
+import SoilMoistureTrendsCard from "./../components/PCGrafik";
 import TempHumidityTrendsCard from "./../components/TempHumidityTrendsCard";
 import PlantDataTable from "./../components/ConnectedDevicesTable";
 import ColorLegend from "../components/ColorLegend";
+import PCGrafik from "./../components/PCGrafik";
 
 // Helper function buat render MetricCard, nanganin kondisi loading atau data kosong
 const renderMetricCard = (data: MetricData | null, isLoading: boolean) => {
@@ -70,8 +71,9 @@ export default function Dashboard() {
     temperature,
     humidity,
     plantData,
-    deviceStatus, // Perbaikan: Ambil deviceStatus dari useDashboardData
+    deviceStatus,
     recentAlerts,
+    graphData,
     isLoading,
   } = useDashboardData();
 
@@ -92,7 +94,7 @@ export default function Dashboard() {
       </div>
 
       <div className=" gap-6 mb-6">
-        <SoilMoistureTrendsCard data={[]} isLoading={isLoading} />
+        <PCGrafik isLoading={isLoading} graphUrl={graphData} />
         {/* <TempHumidityTrendsCard data={[]} isLoading={isLoading} /> */}
       </div>
 
@@ -101,7 +103,6 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Perbaikan: Ganti plantData menjadi deviceStatus */}
         <DeviceStatusCard devices={deviceStatus} isLoading={isLoading} />
         <RecentAlertsCard
           alerts={isLoading || !recentAlerts ? [] : recentAlerts}

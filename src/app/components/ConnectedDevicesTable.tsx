@@ -3,8 +3,6 @@
 import React from 'react';
 import { FaChartLine, FaCog, FaTrash } from 'react-icons/fa';
 
-// Hapus import DashboardDevice dari hooks/useDashboardData
-// Gantilah dengan PlantData yang baru
 import { PlantData } from './../hooks/useDashboardData';
 
 export interface PlantDataTableProps {

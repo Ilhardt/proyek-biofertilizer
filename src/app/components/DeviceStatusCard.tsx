@@ -11,7 +11,6 @@ import { DeviceData } from '../hooks/useDashboardData';
  * @example <DeviceStatusCard devices={data} isLoading={loading} />
  */
 interface DeviceStatusCardProps {
-    // Perbaikan: Ganti tipe devices menjadi DeviceData[]
     devices: DeviceData[] | null;
     isLoading?: boolean;
 }
@@ -48,7 +47,6 @@ const DeviceStatusCard: React.FC<DeviceStatusCardProps> = ({ devices, isLoading 
                                     </div>
                                     <div>
                                         {/* Nama perangkat */}
-                                        {/* Perbaikan: Menggunakan device.name */}
                                         <p className="font-semibold text-lg">{device.name}</p>
                                     </div>
                                 </div>
